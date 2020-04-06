@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: halkeye/matrix-dimension
+  repository: turt2live/matrix-dimension
   tag: latest
   pullPolicy: Always
 
@@ -68,6 +68,22 @@ tolerations: []
 affinity: {}
 
 database_uri:
+
+## Persist configuration to a persistent volume
+persistence:
+  ## database data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If unset, storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  enabled: false
+  existingClaim:
+  storageClassName:
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
 
 config:
 # The web settings for the service (API and UI).

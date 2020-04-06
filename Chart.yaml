@@ -1,5 +1,17 @@
 apiVersion: v1
-appVersion: "1.0"
-description: A Helm chart for Kubernetes
+appVersion: "latest"
+description: An open source integrations manager for matrix clients, like Riot. 
 name: matrix-dimension
 version: 0.1.0
+keywords:
+  - synapse
+  - chat
+  - matrix
+  - riot
+home: https://www.github.com/turt2live/matrix-dimension
+sources:
+  - https://www.github.com/turt2live/matrix-dimension
+  - https://hub.docker.com/r/turt2live/matrix-dimension
+maintainers:
+  - name: Gavin Mogan
+    email: helm@gavinmogan.com
