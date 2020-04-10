@@ -6,6 +6,13 @@ metadata:
 {{ include "matrix-dimension.labels" . | indent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+{{- if .Values.strategy }}
+  strategy:
+{{ toYaml .Values.strategy | indent 4 }}
+{{ if eq .Values.strategy.type "Recreate" }}
+    rollingUpdate: null
+{{- end }}
+{{- end }}
   selector:
     matchLabels:
       app.kubernetes.io/name: {{ include "matrix-dimension.name" . }}
@@ -16,6 +23,10 @@ spec:
         app.kubernetes.io/name: {{ include "matrix-dimension.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
+    {{- if .Values.dnsConfig }}
+      dnsConfig:
+        {{- toYaml .Values.dnsConfig | nindent 8 }}
+    {{- end }}
     {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -23,6 +34,21 @@ spec:
       serviceAccountName: {{ template "matrix-dimension.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: copy-config
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh"]
+          args: ["-c", "cp /config/config.yaml /data/"]
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /config
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -32,9 +58,6 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /data
-            - name: config
-              mountPath: /data
-              subpath: config.yaml
           env:
             - { name: DATABASE_URI, value: {{ .Values.database_uri | quote }} }
           ports:
