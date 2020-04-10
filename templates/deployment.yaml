@@ -22,6 +22,8 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "matrix-dimension.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
     spec:
     {{- if .Values.dnsConfig }}
       dnsConfig:
