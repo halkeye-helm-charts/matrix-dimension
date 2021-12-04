@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: turt2live/matrix-dimension
-  tag: latest
+  tag: "{{ .Chart.AppVersion }}"
   pullPolicy: Always
 
 imagePullSecrets: []
@@ -16,14 +16,19 @@ fullnameOverride: ""
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
+  # Annotations to add to the service account
+  annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name:
 
-podSecurityContext: {}
+podSecurityContext:
+  {}
   # fsGroup: 2000
 
-securityContext: {}
+securityContext:
+  {}
+  # privileged: true
   # capabilities:
   #   drop:
   #   - ALL
@@ -32,12 +37,28 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
+  externalTrafficPolicy:
   type: ClusterIP
   port: 8184
 
+probes:
+  liveness:
+    failureThreshold: 5
+    periodSeconds: 10
+  readiness:
+    failureThreshold: 5
+    periodSeconds: 10
+  startup:
+    initialDelaySeconds: 5
+    failureThreshold: 30
+    periodSeconds: 10
+
 ingress:
   enabled: false
-  annotations: {}
+  ## ingress.ingressClassName -- Support for ingress class name that was introduced in kubernetes 1.19
+  ingressClassName:
+  annotations:
+    {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
@@ -49,7 +70,8 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: {}
+resources:
+  {}
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -67,32 +89,38 @@ tolerations: []
 
 affinity: {}
 
+podAnnotations: {}
+
+deploymentAnnotations: {}
+
 database_uri:
 
 ## Persist configuration to a persistent volume
 persistence:
-  ## database data Persistent Volume Storage Class
+  # persistence.enabled - Should disk persistence be enabled
+  enabled: false
   ## If defined, storageClassName: <storageClass>
   ## If unset, storageClassName: "", which disables dynamic provisioning
   ## If undefined (the default) or set to null, no storageClassName spec is
   ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
   ##   GKE, AWS & OpenStack)
   ##
-  enabled: false
-  existingClaim:
   storageClassName:
+  existingClaim:
   accessModes:
     - ReadWriteOnce
   size: 1Gi
+  ## persistence.skipuninstall -- Do not delete the pvc upon helm uninstall
+  skipuninstall: false
 
 config:
-# The web settings for the service (API and UI).
-# It is best to have this run on localhost and use a reverse proxy to access Dimension.
+  # The web settings for the service (API and UI).
+  # It is best to have this run on localhost and use a reverse proxy to access Dimension.
   web:
     port: 8184
-    address: '0.0.0.0'
+    address: "0.0.0.0"
 
-# Homeserver configuration
+  # Homeserver configuration
   homeserver:
     # The domain name of the homeserver. This is used in many places, such as with go-neb
     # setups, to identify the homeserver.
@@ -117,13 +145,13 @@ config:
     # information on how to acquire an access token, visit https://t2bot.io/docs/access_tokens
     accessToken: "something"
 
-# These users can modify the integrations this Dimension supports.
-# To access the admin interface, open Dimension in Riot and click the settings icon.
+  # These users can modify the integrations this Dimension supports.
+  # To access the admin interface, open Dimension in Riot and click the settings icon.
   admins:
     - "@someone:domain.com"
 
-# IPs and CIDR ranges listed here will be blocked from being widgets.
-# Note: Widgets may still be embedded with restricted content, although not through Dimension directly.
+  # IPs and CIDR ranges listed here will be blocked from being widgets.
+  # Note: Widgets may still be embedded with restricted content, although not through Dimension directly.
   widgetBlacklist:
     - 10.0.0.0/8
     - 172.16.0.0/12
@@ -137,7 +165,7 @@ config:
     # Where to store misc information for the utility bot account.
     botData: "dimension.bot.json"
 
-# Display settings that apply to self-hosted go-neb instances
+  # Display settings that apply to self-hosted go-neb instances
   goneb:
     # The avatars to set for each bot. Usually these don't need to be changed, however if your homeserver
     # is not able to reach t2bot.io then you should specify your own here. To not use an avatar for a bot,
@@ -155,14 +183,14 @@ config:
       circleci: "mxc://t2bot.io/cf7d875845a82a6b21f5f66de78f6bee"
       jira: "mxc://t2bot.io/f4a38ebcc4280ba5b950163ca3e7c329"
 
-# Settings for interacting with Telegram. Currently only applies for importing
-# sticker packs from Telegram.
+  # Settings for interacting with Telegram. Currently only applies for importing
+  # sticker packs from Telegram.
   telegram:
     # Talk to @BotFather on Telegram to get a token
     botToken: "YourTokenHere"
 
-# Custom sticker pack options.
-# Largely based on https://github.com/turt2live/matrix-sticker-manager
+  # Custom sticker pack options.
+  # Largely based on https://github.com/turt2live/matrix-sticker-manager
   stickers:
     # Whether or not to allow people to add custom sticker packs
     enabled: true
@@ -173,13 +201,13 @@ config:
     # The sticker manager URL to promote
     managerUrl: "https://stickers.t2bot.io"
 
-# Settings for how Dimension is represented to the public
+  # Settings for how Dimension is represented to the public
   dimension:
     # This is where Dimension is accessible from clients. Be sure to set this
     # to your own Dimension instance.
     publicUrl: "https://dimension.example.org"
 
-# Settings for controlling how logging works
+  # Settings for controlling how logging works
   logging:
     file: logs/dimension.log
     console: true

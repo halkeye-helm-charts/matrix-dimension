@@ -35,13 +35,20 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "matrix-dimension.labels" -}}
-app.kubernetes.io/name: {{ include "matrix-dimension.name" . }}
 helm.sh/chart: {{ include "matrix-dimension.chart" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+{{ include "matrix-dimension.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end -}}
+
+{{/*
+Selector labels
+*/}}
+{{- define "matrix-dimension.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "matrix-dimension.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{/*

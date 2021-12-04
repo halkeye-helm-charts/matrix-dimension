@@ -6,11 +6,11 @@ metadata:
 {{ include "matrix-dimension.labels" . | indent 4 }}
 spec:
   type: {{ .Values.service.type }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy }}
   ports:
     - port: {{ .Values.service.port }}
       targetPort: http
       protocol: TCP
       name: http
   selector:
-    app.kubernetes.io/name: {{ include "matrix-dimension.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
+    {{- include "matrix-dimension.selectorLabels" . | nindent 4 }}
